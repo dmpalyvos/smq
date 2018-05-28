@@ -1,3 +1,5 @@
+package me.palyvos.smq;
+
 import java.util.Random;
 
 public class ExponentialBackoff {

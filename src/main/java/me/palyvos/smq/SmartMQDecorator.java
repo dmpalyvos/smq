@@ -1,18 +1,21 @@
+package me.palyvos.smq;
+
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.Spliterator;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class FlowControlWriterQueueDecorator<T> implements Queue<T> {
+public class SmartMQDecorator<T> implements BlockingQueue<T> {
 
-  private final Queue<T> decorated;
-  private final FlowControlWriter<T> flowControl;
+  private final BlockingQueue<T> decorated;
+  private final SmartMQWriterBase flowControl;
   private final int queueIndex;
 
-  public FlowControlWriterQueueDecorator(Queue<T> decorated, int queueIndex, FlowControlWriter flowControl) {
+  public SmartMQDecorator(BlockingQueue<T> decorated, int queueIndex, SmartMQWriterBase flowControl) {
     this.decorated = decorated;
     this.flowControl = flowControl;
     this.queueIndex = queueIndex;
@@ -20,12 +23,50 @@ public class FlowControlWriterQueueDecorator<T> implements Queue<T> {
 
   @Override
   public boolean add(T t) {
-    return decorated.add(t);
+    try {
+      flowControl.write(queueIndex, t);
+    } catch (InterruptedException e) {
+      //FIXME
+      e.printStackTrace();
+    }
+    return true;
   }
 
   @Override
   public boolean offer(T t) {
-    return decorated.offer(t);
+    try {
+      flowControl.write(queueIndex, t);
+    } catch (InterruptedException e) {
+      //FIXME
+      e.printStackTrace();
+    }
+    return true;
+  }
+
+  @Override
+  public void put(T t) throws InterruptedException {
+    add(t);
+  }
+
+  @Override
+  public boolean offer(T t, long timeout, TimeUnit unit) throws InterruptedException {
+    return offer(t);
+  }
+
+  @Override
+  public T take() throws InterruptedException {
+    return poll();
+  }
+
+  @Override
+  public T poll(long timeout, TimeUnit unit) throws InterruptedException {
+    return poll();
+  }
+
+  @Override
+  public int remainingCapacity() {
+    //FIXME
+    return 1000;
   }
 
   @Override
@@ -65,6 +106,16 @@ public class FlowControlWriterQueueDecorator<T> implements Queue<T> {
   @Override
   public boolean contains(Object o) {
     return decorated.contains(o);
+  }
+
+  @Override
+  public int drainTo(Collection<? super T> c) {
+    return 0;
+  }
+
+  @Override
+  public int drainTo(Collection<? super T> c, int maxElements) {
+    return 0;
   }
 
   @Override
