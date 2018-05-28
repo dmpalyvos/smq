@@ -2,85 +2,64 @@ package me.palyvos.smq;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Queue;
 import java.util.Spliterator;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class SmartMQDecorator<T> implements BlockingQueue<T> {
+public class SmartMQDecorator<T> implements Queue<T> {
 
   private final BlockingQueue<T> decorated;
-  private final SmartMQWriterBase flowControl;
-  private final int queueIndex;
+  private final SmartMQController<T> controller;
+  private final int index;
 
-  public SmartMQDecorator(BlockingQueue<T> decorated, int queueIndex, SmartMQWriterBase flowControl) {
+  public SmartMQDecorator(BlockingQueue<T> decorated, int index,
+      SmartMQController<T> controller) {
     this.decorated = decorated;
-    this.flowControl = flowControl;
-    this.queueIndex = queueIndex;
+    this.controller = controller;
+    this.index = index;
   }
 
   @Override
   public boolean add(T t) {
-    try {
-      flowControl.write(queueIndex, t);
-    } catch (InterruptedException e) {
-      //FIXME
-      e.printStackTrace();
-    }
+    controller.offer(index, t);
     return true;
   }
 
   @Override
   public boolean offer(T t) {
-    try {
-      flowControl.write(queueIndex, t);
-    } catch (InterruptedException e) {
-      //FIXME
-      e.printStackTrace();
+    return add(t);
+  }
+
+  @Override
+  public boolean remove(Object o) {
+    boolean removed = decorated.remove(o);
+    if (removed) {
+      controller.notifyRead(index);
     }
-    return true;
+    return removed;
   }
 
   @Override
-  public void put(T t) throws InterruptedException {
-    add(t);
-  }
-
-  @Override
-  public boolean offer(T t, long timeout, TimeUnit unit) throws InterruptedException {
-    return offer(t);
-  }
-
-  @Override
-  public T take() throws InterruptedException {
-    return poll();
-  }
-
-  @Override
-  public T poll(long timeout, TimeUnit unit) throws InterruptedException {
-    return poll();
-  }
-
-  @Override
-  public int remainingCapacity() {
-    //FIXME
-    return 1000;
+  public boolean contains(Object o) {
+    return decorated.contains(o);
   }
 
   @Override
   public T remove() {
-    T value = decorated.remove();
-    flowControl.notifyRead(queueIndex);
+    T value = controller.poll(index);
+    if (value == null) {
+      throw new NoSuchElementException();
+    }
     return value;
   }
 
   @Override
   public T poll() {
-    T value = decorated.poll();
-    flowControl.notifyRead(queueIndex);
-    return value;
+    return controller.poll(index);
   }
 
   @Override
@@ -104,23 +83,8 @@ public class SmartMQDecorator<T> implements BlockingQueue<T> {
   }
 
   @Override
-  public boolean contains(Object o) {
-    return decorated.contains(o);
-  }
-
-  @Override
-  public int drainTo(Collection<? super T> c) {
-    return 0;
-  }
-
-  @Override
-  public int drainTo(Collection<? super T> c, int maxElements) {
-    return 0;
-  }
-
-  @Override
   public Iterator<T> iterator() {
-    return decorated.iterator();
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -134,33 +98,28 @@ public class SmartMQDecorator<T> implements BlockingQueue<T> {
   }
 
   @Override
-  public boolean remove(Object o) {
-    return decorated.remove(o);
-  }
-
-  @Override
   public boolean containsAll(Collection<?> c) {
     return decorated.containsAll(c);
   }
 
   @Override
   public boolean addAll(Collection<? extends T> c) {
-    return decorated.addAll(c);
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean removeAll(Collection<?> c) {
-    return decorated.removeAll(c);
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean removeIf(Predicate<? super T> filter) {
-    return decorated.removeIf(filter);
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean retainAll(Collection<?> c) {
-    return decorated.retainAll(c);
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -180,17 +139,17 @@ public class SmartMQDecorator<T> implements BlockingQueue<T> {
 
   @Override
   public Spliterator<T> spliterator() {
-    return decorated.spliterator();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Stream<T> stream() {
-    return decorated.stream();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Stream<T> parallelStream() {
-    return decorated.parallelStream();
+    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 
-public class Consumer<T> implements Runnable {
+public class Consumer implements Runnable {
 
-  private final List<BlockingQueue<T>> inputs;
-  private final Queue<T> output;
+  private final List<Queue<String>> inputs;
+  private final Queue<String> output;
   private final long sleep;
   private final String name;
 
-  public Consumer(List<BlockingQueue<T>> inputs, Queue<T> output, long sleep, String name) {
+  public Consumer(List<Queue<String>> inputs, Queue<String> output, long sleep, String name) {
     this.inputs = inputs;
     this.output = output;
     this.sleep = sleep;
@@ -22,17 +22,28 @@ public class Consumer<T> implements Runnable {
   public void run() {
     while (true) {
       TestUtil.sleep(sleep);
-      for (BlockingQueue<T> q : inputs) {
-        T value = null;
-        try {
-          value = q.take();
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
+      for (Queue<String> q : inputs) {
+        String value = doTake(q);
         if (value != null) {
-         output.offer(value);
-       }
+          if (value.equals("STOP")) {
+            return;
+          }
+          output.offer(value);
+        }
       }
+    }
+  }
+
+  private String doTake(Queue<String> q) {
+    if (q instanceof BlockingQueue) {
+      try {
+        return ((BlockingQueue<String>) q).take();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+        return null;
+      }
+    } else {
+      return q.poll();
     }
   }
 }
