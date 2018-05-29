@@ -1,4 +1,4 @@
-package me.palyvos.smq;
+package me.palyvos.smq.util;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicIntegerArray;

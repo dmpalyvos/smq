@@ -2,7 +2,6 @@ package me.palyvos.smq;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Spliterator;
 import java.util.concurrent.BlockingQueue;
@@ -10,150 +9,136 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class SmartMQDecorator<T> implements Queue<T> {
+public class BlockingQueueToQueueAdapter<T> implements Queue<T> {
 
-  private final BlockingQueue<T> decorated;
-  private final SmartMQController<T> controller;
-  private final int index;
+  private final BlockingQueue<T> apdatee;
 
-  public SmartMQDecorator(BlockingQueue<T> decorated, int index,
-      SmartMQController<T> controller) {
-    this.decorated = decorated;
-    this.controller = controller;
-    this.index = index;
+  public BlockingQueueToQueueAdapter(BlockingQueue<T> apdatee) {
+    this.apdatee = apdatee;
   }
 
   @Override
   public boolean add(T t) {
-    controller.offer(index, t);
-    return true;
+    return apdatee.add(t);
   }
 
   @Override
   public boolean offer(T t) {
-    return add(t);
+    return apdatee.offer(t);
   }
 
   @Override
   public boolean remove(Object o) {
-    boolean removed = decorated.remove(o);
-    if (removed) {
-      controller.notifyRead(index);
-    }
-    return removed;
+    return apdatee.remove(o);
   }
 
   @Override
   public boolean contains(Object o) {
-    return decorated.contains(o);
+    return apdatee.contains(o);
   }
 
   @Override
   public T remove() {
-    T value = controller.poll(index);
-    if (value == null) {
-      throw new NoSuchElementException();
-    }
-    return value;
+    return apdatee.remove();
   }
 
   @Override
   public T poll() {
-    return controller.poll(index);
+    return apdatee.poll();
   }
 
   @Override
   public T element() {
-    return decorated.element();
+    return apdatee.element();
   }
 
   @Override
   public T peek() {
-    return decorated.peek();
+    return apdatee.peek();
   }
 
   @Override
   public int size() {
-    return decorated.size();
+    return apdatee.size();
   }
 
   @Override
   public boolean isEmpty() {
-    return decorated.isEmpty();
+    return apdatee.isEmpty();
   }
 
   @Override
   public Iterator<T> iterator() {
-    throw new UnsupportedOperationException();
+    return apdatee.iterator();
   }
 
   @Override
   public Object[] toArray() {
-    return decorated.toArray();
+    return apdatee.toArray();
   }
 
   @Override
   public <T1> T1[] toArray(T1[] a) {
-    return decorated.toArray(a);
+    return apdatee.toArray(a);
   }
 
   @Override
   public boolean containsAll(Collection<?> c) {
-    return decorated.containsAll(c);
+    return apdatee.containsAll(c);
   }
 
   @Override
   public boolean addAll(Collection<? extends T> c) {
-    throw new UnsupportedOperationException();
+    return apdatee.addAll(c);
   }
 
   @Override
   public boolean removeAll(Collection<?> c) {
-    throw new UnsupportedOperationException();
+    return apdatee.removeAll(c);
   }
 
   @Override
   public boolean removeIf(Predicate<? super T> filter) {
-    throw new UnsupportedOperationException();
+    return apdatee.removeIf(filter);
   }
 
   @Override
   public boolean retainAll(Collection<?> c) {
-    throw new UnsupportedOperationException();
+    return apdatee.retainAll(c);
   }
 
   @Override
   public void clear() {
-    decorated.clear();
+    apdatee.clear();
   }
 
   @Override
   public boolean equals(Object o) {
-    return decorated.equals(o);
+    return apdatee.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return decorated.hashCode();
+    return apdatee.hashCode();
   }
 
   @Override
   public Spliterator<T> spliterator() {
-    throw new UnsupportedOperationException();
+    return apdatee.spliterator();
   }
 
   @Override
   public Stream<T> stream() {
-    throw new UnsupportedOperationException();
+    return apdatee.stream();
   }
 
   @Override
   public Stream<T> parallelStream() {
-    throw new UnsupportedOperationException();
+    return apdatee.parallelStream();
   }
 
   @Override
   public void forEach(Consumer<? super T> action) {
-    decorated.forEach(action);
+    apdatee.forEach(action);
   }
 }

@@ -13,7 +13,7 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-public class SmartMQControllerTest {
+public class SmartMQIntegrationTest {
 
   @DataProvider(name = "deadlock-test-data")
   public Object[][] deadlockTestData() {
@@ -21,7 +21,9 @@ public class SmartMQControllerTest {
         // Deadlock scenario: output queue size = 0
         {Arrays.asList(TestUtil.newQueue(), TestUtil.newQueue()), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 0},
         // Correct scenario: output queue size = 2 queues * 2 writes per queue * 50 repetitions = 200
-        {SmartMQController.withArrayBlockingQueues(2, 1).getQueues(), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
+        {QueueFactory.INSTANCE.newArraySmartMQsWriterOnly(2, 1), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
+        // Correct scenario: output queue size = 2 queues * 2 writes per queue * 50 repetitions = 200
+        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
     };
   }
 
@@ -49,7 +51,7 @@ public class SmartMQControllerTest {
     final int capacity = 10000;
     return new Object[][]{
         {Arrays.asList(TestUtil.newQueue(capacity), TestUtil.newQueue()), new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
-        {SmartMQController.withArrayBlockingQueues(2, capacity).getQueues(), new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
+        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
     };
   }
 
@@ -72,8 +74,6 @@ public class SmartMQControllerTest {
     }
 
     System.out.format("Duration = %dms%n", System.currentTimeMillis() - start);
-
-
   }
 
 }
