@@ -49,7 +49,7 @@ public final class SmartMQWriterImpl implements SmartMQWriter, SmartMQController
 
 
   @Override
-  public <T> void add(int queueIndex, T value) throws InterruptedException {
+  public <T> void put(int queueIndex, T value) throws InterruptedException {
     if (value == null) {
       throw new IllegalArgumentException("value");
     }

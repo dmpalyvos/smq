@@ -46,7 +46,7 @@ public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
   @Override
   public boolean offer(T value) {
     try {
-      writer.add(writerIndex, value);
+      writer.put(writerIndex, value);
       reader.notifyWrite(readerIndex);
       return true;
     } catch (InterruptedException e) {
@@ -152,7 +152,7 @@ public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
 
 
     @Override
-    public <T> void add(int queueIndex, T value) {
+    public <T> void put(int queueIndex, T value) {
       decorated.offer((R) value);
     }
 
