@@ -1,4 +1,4 @@
-package me.palyvos.smq;
+package io.palyvos.smq;
 
 import java.util.Collection;
 import java.util.Iterator;
