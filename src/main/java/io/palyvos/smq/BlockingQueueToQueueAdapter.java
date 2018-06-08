@@ -9,6 +9,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * Adapter class that hides the blocking parts of a {@link BlockingQueue} object.
+ *
+ * @author palivosd
+ */
 public class BlockingQueueToQueueAdapter<T> implements Queue<T> {
 
   private final BlockingQueue<T> apdatee;

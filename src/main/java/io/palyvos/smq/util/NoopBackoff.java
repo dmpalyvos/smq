@@ -1,5 +1,10 @@
 package io.palyvos.smq.util;
 
+/**
+ * {@link Backoff} implementation that does nothing. Usefull when no backoff is desired.
+ *
+ * @author palivosd
+ */
 public enum NoopBackoff implements Backoff {
   INSTANCE;
 

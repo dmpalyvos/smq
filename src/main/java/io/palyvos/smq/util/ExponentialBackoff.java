@@ -2,6 +2,12 @@ package io.palyvos.smq.util;
 
 import java.util.Random;
 
+/**
+ * {@link Backoff} implementation that makes the active thread sleep for exponentially increasing
+ * amounts of time.
+ *
+ * @author palivosd
+ */
 public class ExponentialBackoff implements Backoff {
 
   private static final int INTEGER_RANGE_MAX_SHIFT = 30;

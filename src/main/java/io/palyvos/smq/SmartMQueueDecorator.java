@@ -1,5 +1,6 @@
 package io.palyvos.smq;
 
+import io.palyvos.smq.util.Backoff;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Spliterator;
@@ -7,6 +8,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * The decorator that converts a regular {@link BlockingQueue} to a SmartMultiQueue. To decorate an
+ * object, use the provided {@link Builder}, which allows the decorated to use only a {@link
+ * SmartMQReader}, a {@link SmartMQWriter} or both, depending on your needs.
+ *
+ * @param <T> The type of the queue contents
+ * @author palivosd
+ */
 public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
 
   private final int readerIndex;
@@ -109,6 +118,13 @@ public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Builder for {@link SmartMQueueDecorator}s. Allows to selectively enable {@link SmartMQReader},
+   * {@link SmartMQWriter}, or both. If an optional parameter is not given before {@link #build()},
+   * a default noop value will be used for it.
+   *
+   * @param <T> The type of the queue contents.
+   */
   public static class Builder<T> {
 
     private final BlockingQueue<T> decorated;
@@ -118,24 +134,48 @@ public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
     private int writerIndex;
     private SmartMQWriter writer;
 
+    /**
+     * Construct.
+     *
+     * @param decorated The {@link BlockingQueue} that will be converted to a SmartMultiQueue.
+     */
     public Builder(BlockingQueue<T> decorated) {
       this.decorated = decorated;
       this.reader = new SMQReaderNoop<>(decorated);
       this.writer = new SMQWriterNoop<>(decorated);
     }
 
-    public Builder reader(SmartMQReaderImpl reader, int index) {
+    /**
+     * Set the {@link SmartMQReader} that will be used for this queue.
+     *
+     * @param reader The reader that will be used.
+     * @param index The index of the queue, as as returned by {@link SmartMQController#register(BlockingQueue,
+     * Backoff)}.
+     */
+    public Builder reader(SmartMQReader reader, int index) {
       this.reader = reader;
       this.readerIndex = index;
       return this;
     }
 
+    /**
+     * Set the {@link SmartMQWriter} that will be used for this queue.
+     *
+     * @param writer The writer that will be used
+     * @param index The index of the queue, as as returned by {@link SmartMQController#register(BlockingQueue,
+     * Backoff)}.
+     */
     public Builder writer(SmartMQWriter writer, int index) {
       this.writer = writer;
       this.writerIndex = index;
       return this;
     }
 
+    /**
+     * Generate the decorated queue with the parameters of the builder.
+     *
+     * @return A SmartMultiQueue object.
+     */
     public SmartMQueueDecorator<T> build() {
       return new SmartMQueueDecorator<>(this);
     }
