@@ -13,17 +13,24 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+/**
+ * Basic integration tests to illustrate how SmartMultiQueues help avoid deadlocks in certain
+ * Producer-Consumer graphs.
+ */
 public class SmartMQIntegrationTest {
 
   @DataProvider(name = "deadlock-test-data")
   public Object[][] deadlockTestData() {
     return new Object[][]{
         // Deadlock scenario: output queue size = 0
-        {Arrays.asList(TestUtil.newQueue(), TestUtil.newQueue()), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 0},
+        {Arrays.asList(TestUtil.newQueue(), TestUtil.newQueue()),
+            new ConcurrentLinkedQueue<String>(), 10, 5, 50, 0},
         // Correct scenario: output queue size = 2 queues * 2 writes per queue * 50 repetitions = 200
-        {QueueFactory.INSTANCE.newArraySmartMQsWriterOnly(2, 1), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
+        {QueueFactory.INSTANCE.newArraySmartMQsWriterOnly(2, 1),
+            new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
         // Correct scenario: output queue size = 2 queues * 2 writes per queue * 50 repetitions = 200
-        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 10, 5, 50, 200},
+        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 10, 5,
+            50, 200},
     };
   }
 
@@ -31,12 +38,14 @@ public class SmartMQIntegrationTest {
   public void deadlockTest(List<Queue<String>> inputs, Queue<String> output,
       long producerSleep, long consumerSleep, int producerRepetitions, int expectedSize) {
 
-    Thread producerThread = new Thread(new Producer(inputs, producerSleep, "PRODUCER", producerRepetitions));
+    Thread producerThread = new Thread(
+        new Producer(inputs, producerSleep, "PRODUCER", producerRepetitions));
 
     // Consumer starts reading from the other queue to force deadlock
     List<Queue<String>> consumerInputs = new ArrayList<>(inputs);
     Collections.reverse(consumerInputs);
-    Thread consumerThread = new Thread(new Consumer(consumerInputs, output, consumerSleep, "CONSUMER"));
+    Thread consumerThread = new Thread(
+        new Consumer(consumerInputs, output, consumerSleep, "CONSUMER"));
 
     producerThread.start();
     consumerThread.start();
@@ -50,8 +59,10 @@ public class SmartMQIntegrationTest {
   public Object[][] speedTestData() {
     final int capacity = 10000;
     return new Object[][]{
-        {Arrays.asList(TestUtil.newQueue(capacity), TestUtil.newQueue()), new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
-        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
+        {Arrays.asList(TestUtil.newQueue(capacity), TestUtil.newQueue()),
+            new ConcurrentLinkedQueue<String>(), 1, 1, 1000},
+        {QueueFactory.INSTANCE.newArraySmartMQs(2, 1), new ConcurrentLinkedQueue<String>(), 1, 1,
+            1000},
     };
   }
 
@@ -59,8 +70,9 @@ public class SmartMQIntegrationTest {
   public void speedTest(List<Queue<String>> inputs, Queue<String> output,
       long producerSleep, long consumerSleep, int producerRepetitions) {
 
-  Thread producerThread = new Thread(new Producer(inputs, producerSleep, "PRODUCER", producerRepetitions));
-  Thread consumerThread = new Thread(new Consumer(inputs, output, consumerSleep, "CONSUMER"));
+    Thread producerThread = new Thread(
+        new Producer(inputs, producerSleep, "PRODUCER", producerRepetitions));
+    Thread consumerThread = new Thread(new Consumer(inputs, output, consumerSleep, "CONSUMER"));
 
     long start = System.currentTimeMillis();
     producerThread.start();

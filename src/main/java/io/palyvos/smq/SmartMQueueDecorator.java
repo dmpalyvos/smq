@@ -141,6 +141,7 @@ public class SmartMQueueDecorator<T> extends BlockingQueueToQueueAdapter<T> {
      */
     public Builder(BlockingQueue<T> decorated) {
       this.decorated = decorated;
+      // Default NOOP writer and reader
       this.reader = new SMQReaderNoop<>(decorated);
       this.writer = new SMQWriterNoop<>(decorated);
     }

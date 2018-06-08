@@ -15,6 +15,15 @@ public final class SmartMQReaderImpl implements SmartMQReader, SmartMQController
   private MultiSemaphore readSemaphore;
 
   @Override
+  public void init() {
+    if (queues == null || queues.size() == 0) {
+      throw new IllegalStateException("queues");
+    }
+    this.queues = Collections.unmodifiableList(queues);
+    this.readSemaphore = new MultiSemaphore(queues.size());
+  }
+
+  @Override
   public synchronized <T> int register(BlockingQueue<T> queue, Backoff backoff) {
     int index = queues.size();
     queues.add((BlockingQueue<Object>) queue);
@@ -25,15 +34,6 @@ public final class SmartMQReaderImpl implements SmartMQReader, SmartMQController
   @Override
   public synchronized <T> int register(BlockingQueue<T> queue) {
     return register(queue, NoopBackoff.INSTANCE);
-  }
-
-  @Override
-  public void init() {
-    if (queues == null || queues.size() == 0) {
-      throw new IllegalStateException("queues");
-    }
-    this.queues = Collections.unmodifiableList(queues);
-    this.readSemaphore = new MultiSemaphore(queues.size());
   }
 
   @Override
@@ -56,6 +56,5 @@ public final class SmartMQReaderImpl implements SmartMQReader, SmartMQController
   public void waitRead(int queueIndex) throws InterruptedException {
     readSemaphore.acquire(queueIndex);
     backoffs.get(queueIndex).backoff();
-//    }
   }
 }

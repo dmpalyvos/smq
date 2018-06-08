@@ -8,6 +8,11 @@ import java.util.concurrent.BlockingQueue;
 import io.palyvos.smq.util.Backoff;
 import io.palyvos.smq.util.NoopBackoff;
 
+/**
+ * Factory to enable easy generation of SmartMultiQueue Objects with various parameters.
+ *
+ * @author palivosd
+ */
 public enum QueueFactory {
   INSTANCE;
 
@@ -33,10 +38,12 @@ public enum QueueFactory {
     return queues;
   }
 
-  public <T> List<Queue<T>> newArraySmartMQs(int number, int capacity, Backoff readerBackoff, Backoff writerBackoff) {
+  public <T> List<Queue<T>> newArraySmartMQs(int number, int capacity, Backoff readerBackoff,
+      Backoff writerBackoff) {
     SmartMQWriterImpl writer = new SmartMQWriterImpl();
     SmartMQReaderImpl reader = new SmartMQReaderImpl();
-    List<Queue<T>> queues = newArraySmartMQs(number, capacity, reader, readerBackoff, writer, writerBackoff);
+    List<Queue<T>> queues = newArraySmartMQs(number, capacity, reader, readerBackoff, writer,
+        writerBackoff);
     writer.init();
     reader.init();
     return queues;
@@ -46,11 +53,13 @@ public enum QueueFactory {
     return newArraySmartMQs(number, capacity, NoopBackoff.INSTANCE, NoopBackoff.INSTANCE);
   }
 
-  public <T> List<Queue<T>> newArraySmartMQsWriterOnly(int number, int capacity, SmartMQWriterImpl writer, Backoff writerBackoff) {
+  public <T> List<Queue<T>> newArraySmartMQsWriterOnly(int number, int capacity,
+      SmartMQWriterImpl writer, Backoff writerBackoff) {
     return newArraySmartMQs(number, capacity, null, null, writer, writerBackoff);
   }
 
-  public <T> List<Queue<T>> newArraySmartMQsWriterOnly(int number, int capacity, Backoff writerBackoff) {
+  public <T> List<Queue<T>> newArraySmartMQsWriterOnly(int number, int capacity,
+      Backoff writerBackoff) {
     SmartMQWriterImpl writer = new SmartMQWriterImpl();
     List<Queue<T>> queues = newArraySmartMQsWriterOnly(number, capacity, writer, writerBackoff);
     writer.init();
@@ -61,11 +70,13 @@ public enum QueueFactory {
     return newArraySmartMQsWriterOnly(number, capacity, NoopBackoff.INSTANCE);
   }
 
-  public <T> List<Queue<T>> newArraySmartMQsReaderOnly(int number, int capacity, SmartMQReaderImpl reader, Backoff readerBackoff) {
+  public <T> List<Queue<T>> newArraySmartMQsReaderOnly(int number, int capacity,
+      SmartMQReaderImpl reader, Backoff readerBackoff) {
     return newArraySmartMQs(number, capacity, reader, readerBackoff, null, null);
   }
 
-  public <T> List<Queue<T>> newArraySmartMQsReaderOnly(int number, int capacity, Backoff readerBackoff) {
+  public <T> List<Queue<T>> newArraySmartMQsReaderOnly(int number, int capacity,
+      Backoff readerBackoff) {
     SmartMQReaderImpl reader = new SmartMQReaderImpl();
     List<Queue<T>> queues = newArraySmartMQs(number, capacity, reader, readerBackoff, null, null);
     reader.init();
