@@ -9,16 +9,11 @@ of a number of `BlockingQueue`s so that it mimics that of one single shared bloc
 This means that insertions only block only when all queues are full and
 removals only block when all queues are empty.
 
-Such a data structure can be useful in use-cases that use the split-join paradigm
-like in the image below.
-
-[img]
 
 In domains such as stream processing, depending on the semantics of the Producers 
 and Consumers, it might be desirable to keep the blocking behavior but only when
-there is nothing to be done, i.e. all queues are full or empty.
-
-Additionally, using blocking queues would lead to a deadlock in the situation depicted above. 
+there is nothing to be done, i.e. all queues are full or empty. Additionally, 
+blocking queues can lead to a deadlocks in some situations (see the tests for an example). 
 SmartMultiQueues prevent this issue altogether.
 
 Several extensions are possible, such as not blocking but notifying an observer instead but this project
